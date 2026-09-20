@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Snake Race</title>
+
+<style>
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    min-height: 100vh;
+    background: #07130d;
+    color: #eaffea;
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 15px;
+}
+
+.game {
+    width: min(95vw, 650px);
+    text-align: center;
+}
+
+h1 {
+    font-size: 38px;
+    margin-bottom: 12px;
+    color: #70ff70;
+    text-shadow: 0 0 15px #38ff38;
+}
+
+.stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.stat {
+    background: #102419;
+    border: 1px solid #315d3b;
+    border-radius: 10px;
+    padding: 8px;
+}
+
+.stat small {
+    display: block;
+    color: #9db9a1;
+}
+
+.stat strong {
+    font-size: 20px;
+    color: #7cff7c;
+}
+
+#board {
+    width: 100%;
+    aspect-ratio: 1;
+    background:
+        linear-gradient(#12271a 1px, transparent 1px),
+        linear-gradient(90deg, #12271a 1px, transparent 1px),
+        #08140c;
+    background-size: 4.166% 4.166%;
+    border: 4px solid #4d8c55;
+    border-radius: 14px;
+    position: relative;
+    overflow: hidden;
+    box-shadow:
+        0 0 20px rgba(70,255,100,.2),
+        inset 0 0 25px rgba(0,0,0,.7);
+}
+
+.cell {
+    position: absolute;
+    width: 4.1667%;
+    height: 4.1667%;
+}
+
+.snake {
+    background: linear-gradient(135deg, #9cff7c, #25a83a);
+    border-radius: 35%;
+    box-shadow: 0 0 8px rgba(80,255,80,.5);
+}
+
+.head {
+    background: linear-gradient(135deg, #c9ff9e, #42d957);
+    border-radius: 40%;
+}
+
+.eye {
+    position: absolute;
+    width: 18%;
+    height: 18%;
+    background: #061006;
+    border-radius: 50%;
+}
+
+.eye1 {
+    top: 20%;
+    left: 22%;
+}
+
+.eye2 {
+    top: 20%;
+    right: 22%;
+}
+
+.food {
+    background: radial-gradient(circle at 35% 30%, #ffb5b5, #ff2424 55%, #a40000);
+    border-radius: 50%;
+    transform: scale(.7);
+    box-shadow: 0 0 15px rgba(255,50,50,.8);
+}
+
+.wall {
+    background: linear-gradient(135deg, #707070, #292929);
+    border: 1px solid #999;
+    border-radius: 18%;
+    box-shadow: inset 0 0 5px #111;
+}
+
+.controls {
+    margin-top: 15px;
+    display: grid;
+    grid-template-columns: repeat(3, 65px);
+    justify-content: center;
+    gap: 7px;
+}
+
+.controls button,
+.action {
+    border: 0;
+    border-radius: 12px;
+    background: #183b23;
+    color: white;
+    font-size: 25px;
+    min-height: 55px;
+    cursor: pointer;
+    box-shadow: 0 4px 0 #0b1c10;
+}
+
+.controls button:active,
+.action:active {
+    transform: translateY(3px);
+    box-shadow: 0 1px 0 #0b1c10;
+}
+
+.empty {
+    visibility: hidden;
+}
+
+.actions {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.action {
+    padding: 10px 22px;
+    font-size: 16px;
+    min-height: auto;
+}
+
+.message {
+    margin-top: 12px;
+    min-height: 24px;
+    color: #b9d9bd;
+}
+
+.overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,.78);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    z-index: 10;
+}
+
+.overlayBox {
+    padding: 25px;
+}
+
+.overlay h2 {
+    color: #7cff7c;
+    font-size: 32px;
+    margin-bottom: 10px;
+}
+
+.overlay p {
+    color: #ddd;
+    margin-bottom: 15px;
+}
+
+.startButton {
+    border: 0;
+    padding: 12px 25px;
+    border-radius: 10px;
+    background: #39c94d;
+    color: #041007;
+    font-weight: bold;
+    font-size: 17px;
+    cursor: pointer;
+}
+
+@media (max-width: 500px) {
+    h1 {
+        font-size: 30px;
+    }
+
+    .controls {
+        grid-template-columns: repeat(3, 58px);
+    }
+
+    .controls button {
+        min-height: 50px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="game">
+
+    <h1>🐍 SNAKE RACE</h1>
+
+    <div class="stats">
+        <div class="stat">
+            <small>Score</small>
+            <strong id="score">0</strong>
+        </div>
+
+        <div class="stat">
+            <small>Fruits</small>
+            <strong id="fruits">0/10</strong>
+        </div>
+
+        <div class="stat">
+            <small>Level</small>
+            <strong id="level">1</strong>
+        </div>
+
+        <div class="stat">
+            <small>Speed</small>
+            <strong id="speed">1</strong>
+        </div>
+    </div>
+
+    <div id="board">
+
+        <div id="overlay" class="overlay">
+            <div class="overlayBox">
+                <h2 id="overlayTitle">SNAKE RACE</h2>
+                <p id="overlayText">
+                    Eat 10 fruits to reach the next level!
+                </p>
+                <button class="startButton" id="startBtn">
+                    START GAME
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="controls">
+        <button class="empty"></button>
+        <button data-dir="up">▲</button>
+        <button class="empty"></button>
+
+        <button data-dir="left">◀</button>
+        <button data-dir="down">▼</button>
+        <button data-dir="right">▶</button>
+    </div>
+
+    <div class="actions">
+        <button class="action" id="pauseBtn">⏸ Pause</button>
+        <button class="action" id="restartBtn">↻ Restart</button>
+    </div>
+
+    <div class="message" id="message">
+        Use Arrow Keys / WASD or the buttons.
+    </div>
+
+</div>
+
+<script>
+const board = document.getElementById("board");
+const scoreEl = document.getElementById("score");
+const fruitsEl = document.getElementById("fruits");
+const levelEl = document.getElementById("level");
+const speedEl = document.getElementById("speed");
+const messageEl = document.getElementById("message");
+
+const overlay = document.getElementById("overlay");
+const overlayTitle = document.getElementById("overlayTitle");
+const overlayText = document.getElementById("overlayText");
+const startBtn = document.getElementById("startBtn");
+
+const pauseBtn = document.getElementById("pauseBtn");
+const restartBtn = document.getElementById("restartBtn");
+
+const SIZE = 24;
+
+let snake;
+let food;
+let walls;
+let direction;
+let nextDirection;
+
+let score = 0;
+let fruits = 0;
+let level = 1;
+
+let running = false;
+let paused = false;
+let gameTimer = null;
+
+const speeds = [
+    170,
+    155,
+    145,
+    135,
+    125,
+    115,
+    105,
+    95,
+    85,
+    75
+];
+
+function getCell(x, y, className) {
+    const cell = document.createElement("div");
+
+    cell.className = "cell " + className;
+
+    cell.style.left = (x * 100 / SIZE) + "%";
+    cell.style.top = (y * 100 / SIZE) + "%";
+
+    return cell;
+}
+
+function draw() {
+    board.querySelectorAll(".cell").forEach(e => e.remove());
+
+    walls.forEach(w => {
+        board.appendChild(getCell(w.x, w.y, "wall"));
+    });
+
+    snake.forEach((part, index) => {
+        const el = getCell(
+            part.x,
+            part.y,
+            index === 0 ? "snake head" : "snake"
+        );
+
+        if (index === 0) {
+            const eye1 = document.createElement("div");
+            const eye2 = document.createElement("div");
+
+            eye1.className = "eye eye1";
+            eye2.className = "eye eye2";
+
+            el.appendChild(eye1);
+            el.appendChild(eye2);
+        }
+
+        board.appendChild(el);
+    });
+
+    if (food) {
+        board.appendChild(
+            getCell(food.x, food.y, "food")
+        );
+    }
+}
+
+function randomPosition() {
+
+    for (let attempts = 0; attempts < 1000; attempts++) {
+
+        const position = {
+            x: Math.floor(Math.random() * SIZE),
+            y: Math.floor(Math.random() * SIZE)
+        };
+
+        const occupied =
+            snake.some(s => s.x === position.x && s.y === position.y) ||
+            walls.some(w => w.x === position.x && w.y === position.y);
+
+        if (!occupied) {
+            return position;
+        }
+    }
+
+    return {x: 5, y: 5};
+}
+
+function createWalls() {
+
+    walls = [];
+
+    if (level === 1) return;
+
+    const patterns = [];
+
+    if (level >= 2) {
+        patterns.push(
+            ...[
+                {x: 5, y: 5},
+                {x: 6, y: 5},
+                {x: 7, y: 5},
+                {x: 16, y: 18},
+                {x: 17, y: 18},
+                {x: 18, y: 18}
+            ]
+        );
+    }
+
+    if (level >= 3) {
+        patterns.push(
+            ...[
+                {x: 5, y: 18},
+                {x: 6, y: 18},
+                {x: 7, y: 18},
+                {x: 16, y: 5},
+                {x: 17, y: 5},
+                {x: 18, y: 5}
+            ]
+        );
+    }
+
+    if (level >= 4) {
+        for (let y = 8; y <= 15; y++) {
+            patterns.push({x: 11, y});
+        }
+    }
+
+    if (level >= 5) {
+        for (let y = 8; y <= 15; y++) {
+            patterns.push({x: 12, y});
+        }
+    }
+
+    if (level >= 6) {
+        for (let x = 8; x <= 15; x++) {
+            patterns.push({x, y: 11});
+        }
+    }
+
+    if (level >= 7) {
+        for (let x = 8; x <= 15; x++) {
+            patterns.push({x, y: 12});
+        }
+    }
+
+    if (level >= 8) {
+        for (let x = 3; x <= 20; x++) {
+            if (x !== 11 && x !== 12) {
+                patterns.push({x, y: 3});
+            }
+        }
+    }
+
+    if (level >= 9) {
+        for (let x = 3; x <= 20; x++) {
+            if (x !== 11 && x !== 12) {
+                patterns.push({x, y: 20});
+            }
+        }
+    }
+
+    if (level >= 10) {
+        for (let y = 6; y <= 17; y++) {
+            if (y !== 11 && y !== 12) {
+                patterns.push({x: 3, y});
+                patterns.push({x: 20, y});
+            }
+        }
+    }
+
+    walls = patterns;
+}
+
+function newGame() {
+
+    score = 0;
+    fruits = 0;
+    level = 1;
+
+    snake = [
+        {x: 12, y: 12},
+        {x: 11, y: 12},
+        {x: 10, y: 12}
+    ];
+
+    direction = {x: 1, y: 0};
+    nextDirection = {x: 1, y: 0};
+
+    createWalls();
+    food = randomPosition();
+
+    running = true;
+    paused = false;
+
+    overlay.style.display = "none";
+
+    updateStats();
+    draw();
+
+    startTimer();
+}
+
+function startTimer() {
+
+    clearInterval(gameTimer);
+
+    gameTimer = setInterval(
+        gameLoop,
+        speeds[level - 1]
+    );
+}
+
+function updateStats() {
+
+    scoreEl.textContent = score;
+    fruitsEl.textContent = fruits + "/10";
+    levelEl.textContent = level;
+    speedEl.textContent = 11 - level;
+}
+
+function setDirection(dir) {
+
+    if (!running || paused) return;
+
+    const directions = {
+        up: {x: 0, y: -1},
+        down: {x: 0, y: 1},
+        left: {x: -1, y: 0},
+        right: {x: 1, y: 0}
+    };
+
+    const newDir = directions[dir];
+
+    if (
+        newDir.x === -direction.x &&
+        newDir.y === -direction.y
+    ) {
+        return;
+    }
+
+    nextDirection = newDir;
+}
+
+function gameLoop() {
+
+    if (!running || paused) return;
+
+    direction = nextDirection;
+
+    const head = {
+        x: snake[0].x + direction.x,
+        y: snake[0].y + direction.y
+    };
+
+    // Wrap around the screen
+    if (head.x < 0) head.x = SIZE - 1;
+    if (head.x >= SIZE) head.x = 0;
+    if (head.y < 0) head.y = SIZE - 1;
+    if (head.y >= SIZE) head.y = 0;
+
+    // Wall collision
+    if (
+        walls.some(w =>
+            w.x === head.x &&
+            w.y === head.y
+        )
+    ) {
+        gameOver("You hit a wall!");
+        return;
+    }
+
+    // Snake collision
+    if (
+        snake.some(s =>
+            s.x === head.x &&
+            s.y === head.y
+        )
+    ) {
+        gameOver("You hit yourself!");
+        return;
+    }
+
+    snake.unshift(head);
+
+    if (
+        head.x === food.x &&
+        head.y === food.y
+    ) {
+
+        score += 10;
+        fruits++;
+
+        messageEl.textContent =
+            "+10 points!";
+
+        if (fruits >= 10) {
+
+            if (level >= 10) {
+                victory();
+                return;
+            }
+
+            level++;
+            fruits = 0;
+
+            createWalls();
+            food = randomPosition();
+
+            messageEl.textContent =
+                "LEVEL " + level + "! New obstacles added.";
+
+            updateStats();
+            draw();
+            startTimer();
+
+            return;
+        }
+
+        food = randomPosition();
+
+    } else {
+        snake.pop();
+    }
+
+    updateStats();
+    draw();
+}
+
+function gameOver(reason) {
+
+    running = false;
+    clearInterval(gameTimer);
+
+    overlayTitle.textContent = "GAME OVER";
+    overlayText.textContent =
+        reason + " Score: " + score;
+
+    startBtn.textContent = "PLAY AGAIN";
+    overlay.style.display = "flex";
+}
+
+function victory() {
+
+    running = false;
+    clearInterval(gameTimer);
+
+    score = 1000;
+
+    updateStats();
+
+    overlayTitle.textContent = "🏆 VICTORY!";
+    overlayText.textContent =
+        "You completed all 10 levels with 1000 points!";
+
+    startBtn.textContent = "PLAY AGAIN";
+    overlay.style.display = "flex";
+}
+
+function togglePause() {
+
+    if (!running) return;
+
+    paused = !paused;
+
+    pauseBtn.textContent =
+        paused ? "▶ Resume" : "⏸ Pause";
+
+    messageEl.textContent =
+        paused ? "Game paused." : "Game resumed.";
+}
+
+document.addEventListener("keydown", e => {
+
+    const keys = {
+        ArrowUp: "up",
+        w: "up",
+        W: "up",
+
+        ArrowDown: "down",
+        s: "down",
+        S: "down",
+
+        ArrowLeft: "left",
+        a: "left",
+        A: "left",
+
+        ArrowRight: "right",
+        d: "right",
+        D: "right"
+    };
+
+    if (keys[e.key]) {
+        e.preventDefault();
+        setDirection(keys[e.key]);
+    }
+
+    if (e.key === " ") {
+        e.preventDefault();
+        togglePause();
+    }
+});
+
+document.querySelectorAll("[data-dir]").forEach(button => {
+
+    button.addEventListener("click", () => {
+        setDirection(button.dataset.dir);
+    });
+
+});
+
+startBtn.addEventListener("click", newGame);
+
+restartBtn.addEventListener("click", newGame);
+
+pauseBtn.addEventListener("click", togglePause);
+
+updateStats();
+createWalls();
+snake = [
+    {x: 12, y: 12},
+    {x: 11, y: 12},
+    {x: 10, y: 12}
+];
+food = {x: 17, y: 12};
+draw();
+</script>
+
+</body>
+</html>
