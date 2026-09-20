@@ -1,7 +1,7 @@
 {
   "appId": "com.ismail.snakerace",
   "appName": "Snake Race",
-  "webDir": ".",
+  "webDir": "www",
   "server": {
     "androidScheme": "https"
   }
